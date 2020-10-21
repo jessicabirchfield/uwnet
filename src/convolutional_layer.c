@@ -56,7 +56,33 @@ matrix im2col(image im, int size, int stride)
 
     // TODO: 5.1
     // Fill in the column matrix with patches from the image
+    int kernel_dist = size / 2;  // distance from center of kernel
 
+    // get seperate channels
+    for (int ch = 0; ch < im.c; ch++) {
+      //image curr_im = get_channel(im, ch);
+
+      for (i = 0; i < im.w; i += stride) {  // columns
+        for (j = 0; j < im.h; j += stride) {  // rows
+          for (k_row = -kernel_dist; k_row <= kernel_dist; k_row++) {  // kernel
+            for (k_col = -kernel_dist; k_col <= kernel_dist; k_col++) {
+              // get all the kernel values and put in output matrix
+              col_row_index = (size * size) * ch + k_row * size + k_col + (size * size) / 2;
+              col_col_index = j * im.w + i;
+
+              if (i + k_col < 0 || i + k_col >= im.w || j + k_row < 0 || j + k_row >= im.h) {
+                // out of bounds col-wise or row-wise
+                //col_row_index = (k_row + kernel_dist) * size + (k_col + kernel_dist);
+                col.data[col_row_index * cols + col_col_index] = 0;
+              } else {
+                // this is an actual pixel
+                col.data[col_row_index * cols + col_col_index] = get_pixel(i + k_col, j + k_row, ch);
+              }
+            }
+          }
+        }
+      }
+    }
 
 
     return col;
@@ -77,7 +103,7 @@ image col2im(int width, int height, int channels, matrix col, int size, int stri
 
     // TODO: 5.2
     // Add values into image im from the column matrix
-    
+
 
 
     return im;
@@ -199,4 +225,3 @@ layer make_convolutional_layer(int w, int h, int c, int filters, int size, int s
     l.update   = update_convolutional_layer;
     return l;
 }
-
