@@ -65,19 +65,20 @@ matrix im2col(image im, int size, int stride)
 
       for (i = 0; i < im.w; i += stride) {  // columns
         for (j = 0; j < im.h; j += stride) {  // rows
-          for (k_row = -kernel_dist; k_row <= kernel_dist; k_row++) {  // kernel
-            for (k_col = -kernel_dist; k_col <= kernel_dist; k_col++) {
+          for (int k_row = -kernel_dist; k_row <= kernel_dist; k_row++) {  // kernel
+            for (int k_col = -kernel_dist; k_col <= kernel_dist; k_col++) {
               // get all the kernel values and put in output matrix
-              col_row_index = (size * size) * ch + k_row * size + k_col + (size * size) / 2;
-              col_col_index = j * im.w + i;
+              int col_row_index = (size * size) * ch + k_row * size + k_col + (size * size) / 2;
+              int col_col_index = j * im.w + i;
 
+              // assert(i > -1);
               if (i + k_col < 0 || i + k_col >= im.w || j + k_row < 0 || j + k_row >= im.h) {
                 // out of bounds col-wise or row-wise
                 //col_row_index = (k_row + kernel_dist) * size + (k_col + kernel_dist);
                 col.data[col_row_index * cols + col_col_index] = 0;
               } else {
                 // this is an actual pixel
-                col.data[col_row_index * cols + col_col_index] = get_pixel(i + k_col, j + k_row, ch);
+                col.data[col_row_index * cols + col_col_index] = get_pixel(im, i + k_col, j + k_row, ch);
               }
             }
           }
