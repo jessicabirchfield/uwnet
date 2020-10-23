@@ -57,25 +57,33 @@ matrix im2col(image im, int size, int stride)
 
     // TODO: 5.1
     // Fill in the column matrix with patches from the image
-    int kernel_dist = size / 2;  // distance from center of kernel
+    // int kernel_dist = size / 2;  // distance from center of kernel
+    int kernel_dist_left = -size / 2;
+    int kernel_dist_right = size / 2;
+    if (size % 2 == 0) {
+        kernel_dist_left += 1;
+    }
 
     // get seperate channels
     for (int ch = 0; ch < im.c; ch++) {
-      //image curr_im = get_channel(im, ch);
-
-      for (i = 0; i < im.w; i += stride) {  // columns
-        for (j = 0; j < im.h; j += stride) {  // rows
-          for (int k_row = -kernel_dist; k_row <= kernel_dist; k_row++) {  // kernel
-            for (int k_col = -kernel_dist; k_col <= kernel_dist; k_col++) {
+      for (j = 0; j < im.h; j += stride) {  // rows
+        for (i = 0; i < im.w; i += stride) {  // columns
+          // -1 to 1 --> -1, 0, 1
+          for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // going top bottom - vertical
+            for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // going left right - horizontal
               // get all the kernel values and put in output matrix
-              int col_row_index = (size * size) * ch + k_row * size + k_col + (size * size) / 2;
-              int col_col_index = j * im.w + i;
+              int col_row_index = (size * size) * ch + k_row * size + k_col; //+ (size * size) / 2;
+              if (size % 2 != 0) {
+                col_row_index += (size * size) / 2;
+              }
+              int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
 
-              // assert(i > -1);
               if (i + k_col < 0 || i + k_col >= im.w || j + k_row < 0 || j + k_row >= im.h) {
                 // out of bounds col-wise or row-wise
-                //col_row_index = (k_row + kernel_dist) * size + (k_col + kernel_dist);
+                // col_row_index = (k_row + kernel_dist) * size + (k_col + kernel_dist);
+                // This is correct?
                 col.data[col_row_index * cols + col_col_index] = 0;
+
               } else {
                 // this is an actual pixel
                 col.data[col_row_index * cols + col_col_index] = get_pixel(im, i + k_col, j + k_row, ch);
