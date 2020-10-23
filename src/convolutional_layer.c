@@ -112,6 +112,15 @@ image col2im(int width, int height, int channels, matrix col, int size, int stri
 
     // TODO: 5.2
     // Add values into image im from the column matrix
+    for (int ch = 0; i < channels; i++) {
+        for (int c = 0; c < col.w; c++) { // columns
+            for (int r = 0; r < col.h; r++) { // rows
+                // get the row and column
+                // 
+
+            }
+        }
+    }
 
 
 
