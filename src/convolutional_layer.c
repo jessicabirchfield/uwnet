@@ -104,21 +104,57 @@ matrix im2col(image im, int size, int stride)
 // image im: image to add elements back into
 image col2im(int width, int height, int channels, matrix col, int size, int stride)
 {
-    int i, j, k;
+    //int i, j, k;
 
     image im = make_image(width, height, channels);
     int outw = (im.w-1)/stride + 1;
     int rows = im.c*size*size;
 
+    //assert(outw == col.cols);
+    assert(rows == col.rows);
+    assert(channels == 3);
+    assert(col.rows == (size * size * 3));
     // TODO: 5.2
     // Add values into image im from the column matrix
-    for (int ch = 0; i < channels; i++) {
-        for (int c = 0; c < col.w; c++) { // columns
-            for (int r = 0; r < col.h; r++) { // rows
-                // get the row and column
-                // 
+    // for (int ch = 0; ch < channels; ch++) {
+        for (int c = 0; c < col.cols; c++) { // columns
+          // for (int ch = 0; ch < channels; ch++) {
+            for (int r = 0; r < col.rows; r++) { // rows
+            // for (int r = size * size * ch; r < size * size * (ch + 1); r++) { // rows
+                // get the row r and column c
+                if (col.data[r * col.cols + c] != 0) {
+                  // STEP 1: use row to calculate which pixel is the center
+                  int col_r, k_row, k_col;
+                  int ch = r % (size * size);
+                  col_r = r - (size * size) * ch;  // shift back to 0-8
+                  k_col = (col_r % size) - (size / 2); // k_col
+                  k_row = (col_r / size) - (size / 2); // k_row  we know (-1,1) in the kernel
 
-            }
+                  // STEP 2: Find position of kernel in the image
+                  int im_row, im_col;
+                  // outw == width of image taking stride into account (rounding up)
+                  im_row = (c % ((height-1)/stride + 1)) * stride;
+                  im_col = (c / ((width-1)/stride + 1)) * stride;
+
+                  // STEP 3: Calculate kernel displacement
+                  im_row += k_row;
+                  im_col += k_col;
+
+                  // STEP 4: Check if this is valid placement
+                  if (im_row >= 0 && im_row < height && im_col >= 0 && im_col < width) {
+                    assert(ch < 3);
+                    // Valid, add value into image
+                    float update = get_pixel(im, im_row, im_col, ch) + col.data[r * col.cols + c];
+                    set_pixel(im, im_row, im_col, ch, update);
+                  }
+                }
+
+                // use col to calculate position within kernel
+
+                // if 0 --> ignore
+                // else
+
+            //}
         }
     }
 
