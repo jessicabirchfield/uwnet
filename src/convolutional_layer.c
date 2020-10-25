@@ -48,7 +48,7 @@ matrix backward_convolutional_bias(matrix dy, int n)
 // returns: column matrix
 matrix im2col(image im, int size, int stride)
 {
-    int i, j, k;
+    int i, j;
     int outw = (im.w-1)/stride + 1;
     int outh = (im.h-1)/stride + 1;
     int rows = im.c*size*size;
@@ -105,62 +105,42 @@ matrix im2col(image im, int size, int stride)
 // image im: image to add elements back into
 image col2im(int width, int height, int channels, matrix col, int size, int stride)
 {
-    //int i, j, k;
+    int i, j;
 
     image im = make_image(width, height, channels);
-    int outw = (im.w-1)/stride + 1;
-    int rows = im.c*size*size;
-
-    //assert(outw == col.cols);
-    assert(rows == col.rows);
-    assert(channels == 3);
-    assert(col.rows == (size * size * 3));
+    // int outw = (im.w-1)/stride + 1;
+    // int rows = im.c*size*size;
     // TODO: 5.2
     // Add values into image im from the column matrix
-    // for (int ch = 0; ch < channels; ch++) {
-        for (int c = 0; c < col.cols; c++) { // columns
-          // for (int ch = 0; ch < channels; ch++) {
-            for (int r = 0; r < col.rows; r++) { // rows
-            // for (int r = size * size * ch; r < size * size * (ch + 1); r++) { // rows
-                // get the row r and column c
-                if (col.data[r * col.cols + c] != 0) {
-                  // STEP 1: use row to calculate which pixel is the center
-                  int col_r, k_row, k_col;
-                  int ch = r % (size * size);
-                  col_r = r - (size * size) * ch;  // shift back to 0-8
-                  k_col = (col_r % size) - (size / 2); // k_col
-                  k_row = (col_r / size) - (size / 2); // k_row  we know (-1,1) in the kernel
-
-                  // STEP 2: Find position of kernel in the image
-                  int im_row, im_col;
-                  // outw == width of image taking stride into account (rounding up)
-                  im_row = (c % ((height-1)/stride + 1)) * stride;
-                  im_col = (c / ((width-1)/stride + 1)) * stride;
-
-                  // STEP 3: Calculate kernel displacement
-                  im_row += k_row;
-                  im_col += k_col;
-
-                  // STEP 4: Check if this is valid placement
-                  if (im_row >= 0 && im_row < height && im_col >= 0 && im_col < width) {
-                    assert(ch < 3);
-                    // Valid, add value into image
-                    float update = get_pixel(im, im_row, im_col, ch) + col.data[r * col.cols + c];
-                    set_pixel(im, im_row, im_col, ch, update);
-                  }
-                }
-
-                // use col to calculate position within kernel
-
-                // if 0 --> ignore
-                // else
-
-            //}
-        }
+    int kernel_dist_left = -size / 2;
+    int kernel_dist_right = size / 2;
+    if (size % 2 == 0) {
+        kernel_dist_left += 1;
     }
 
+    // get seperate channels
+    for (int ch = 0; ch < im.c; ch++) {
+      for (j = 0; j < im.h; j += stride) {  // rows
+        for (i = 0; i < im.w; i += stride) {  // columns
+          // -1 to 1 --> -1, 0, 1
+          for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // going top bottom - vertical
+            for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // going left right - horizontal
+              // get all the kernel values and put in output matrix
+              int col_row_index = (size * size) * ch + k_row * size + k_col; //+ (size * size) / 2;
+              if (size % 2 != 0) {
+                col_row_index += (size * size) / 2;
+              }
+              int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
+              if (i + k_col >= 0 && i + k_col < im.w && j + k_row >= 0 && j + k_row < im.h) {
+                float update = get_pixel(im, i + k_col, j + k_row, ch) + col.data[col_row_index * col.cols + col_col_index];
+	        	set_pixel(im, i + k_col, j + k_row, ch, update);
 
-
+              } 
+            }
+          }
+        }
+      }
+    }
     return im;
 }
 
