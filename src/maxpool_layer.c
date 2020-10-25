@@ -21,8 +21,61 @@ matrix forward_maxpool_layer(layer l, matrix in)
     matrix out = make_matrix(in.rows, outw*outh*l.channels);
 
     // TODO: 6.1 - iterate over the input and fill in the output with max values
+    int i, j, ch, rows, c, r;
+    for(i = 0; i < in.rows; i++) {
+        image example = float_to_image(in.data + i*in.cols, l.width, l.height, l.channels);
+        image out_img = make_image(outw, outh, l.channels);
+
+        matrix x = im2col(example, l.size, l.stride);
+        //rows = x.rows / l.channels;
+        rows = l.size * l.size;
+        // Iterate through the columns
+        assert(l.channels == 3);
+        for (ch = 0; ch < l.channels; ch++) {
+            float max = FLT_MIN;
+            for (c = 0; c < x.cols; c++) {
+                // Iterate through the rows
+                for (r = ch * rows; r < rows * (ch + 1); r++) {
+                    float data = x.data[r * x.cols + c];
+                    if (data > max) {
+                        max = data;
+                    }
+                }
+                // set_pixel(out_img, c, r, ch, max);
+                // im.data[x + im.w*(y + im.h*c)];
+                // out.data[i*out.cols + c] = max;
+                // out.data[c + out.rows * (i * out.cols * ch)] = max;
+                out.data[(i * out.cols) + c + outw * (r + outh * l.channels)] = max;
+            }
+        }
 
 
+
+        // for (ch = 0; ch < im.c; ch++) {
+        //     for (j = 0; j < example.h; j += l.stride) {  // rows
+        //         for (i = 0; i < example.w; i += l.stride) {  // columns
+        //             int max = FLT_MIN;
+        //             for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // going top bottom - vertical
+        //                 for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // going left right - horizontal
+        //                     int col_row_index = (l.size * l.size) * ch + k_row * l.size + k_col; //+ (size * size) / 2;
+        //                     if (l.size % 2 != 0) {
+        //                       col_row_index += (l.size * l.size) / 2;
+        //                     }
+        //                     int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // Iterate through the columns for each channel
+
+        // matrix wx = matmul(l.w, x);
+        // for(j = 0; j < wx.rows*wx.cols; ++j){
+        //     out.data[i*out.cols + j] = //wx.data[j];
+        // }
+        // free_matrix(x);
+        // free_matrix(wx);
+    }
 
     return out;
 }
