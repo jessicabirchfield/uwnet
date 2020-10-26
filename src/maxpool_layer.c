@@ -59,61 +59,6 @@ matrix forward_maxpool_layer(layer l, matrix in)
       }
     }
   }
-
-  // //image im = float_to_image(in.data + i*in.cols, l.width, l.height, l.channels);
-  // // image out_img = make_image(outw, outh, l.channels);
-  //
-  // //matrix x = im2col(im, l.size, l.stride);
-  // //rows = x.rows / l.channels;
-  // rows = l.size * l.size;
-  // // Iterate through the columns
-  // assert(l.channels == 3);
-  // for (ch = 0; ch < l.channels; ch++) {
-  //     float max = FLT_MIN;
-  //     for (c = 0; c < x.cols; c++) {
-  //         // Iterate through the rows
-  //         for (r = ch * rows; r < rows * (ch + 1); r++) {
-  //             float data = x.data[r * x.cols + c];
-  //             if (data > max) {
-  //                 max = data;
-  //             }
-  //         }
-  //         // set_pixel(out_img, c, r, ch, max);
-  //         // im.data[x + im.w*(y + im.h*c)];
-  //          out.data[i*out.cols + c] = max;
-  //         // out.data[c + out.rows * (i * out.cols * ch)] = max;
-  //         // out.data[(i * out.cols) + c + outw * (r + outh * l.channels)] = max;
-  //     }
-  // }
-
-
-
-  // for (ch = 0; ch < im.c; ch++) {
-  //     for (j = 0; j < example.h; j += l.stride) {  // rows
-  //         for (i = 0; i < example.w; i += l.stride) {  // columns
-  //             int max = FLT_MIN;
-  //             for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // going top bottom - vertical
-  //                 for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // going left right - horizontal
-  //                     int col_row_index = (l.size * l.size) * ch + k_row * l.size + k_col; //+ (size * size) / 2;
-  //                     if (l.size % 2 != 0) {
-  //                       col_row_index += (l.size * l.size) / 2;
-  //                     }
-  //                     int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
-  //                 }
-  //             }
-  //         }
-  //     }
-  // }
-  // Iterate through the columns for each channel
-
-  // matrix wx = matmul(l.w, x);
-  // for(j = 0; j < wx.rows*wx.cols; ++j){
-  //     out.data[i*out.cols + j] = //wx.data[j];
-  // }
-  // free_matrix(x);
-  // free_matrix(wx);
-  //  }
-
   return out;
 }
 
@@ -127,11 +72,50 @@ matrix backward_maxpool_layer(layer l, matrix dy)
 
   int outw = (l.width-1)/l.stride + 1;
   int outh = (l.height-1)/l.stride + 1;
+
   // TODO: 6.2 - find the max values in the input again and fill in the
   // corresponding delta with the delta from the output. This should be
   // similar to the forward method in structure.
+  int ch, r, row, col, i, j, index;
+  int kernel_dist_left, kernel_dist_right;
+  kernel_dist_left = 0;
+  kernel_dist_right = l.size - 1;
+  if (l.size % 2 != 0) {
+    // odd
+    kernel_dist_left = -l.size / 2;
+    kernel_dist_right = l.size / 2;
+  }
+  
 
-
+  for(r = 0; r < in.rows; r++) {
+    index = 0;
+    // process each image
+    for (ch = 0; ch < l.channels; ch++) {
+      for (row = 0; row < l.height; row += l.stride) {
+        for (col = 0; col < l.width; col += l.stride) {
+          float max = FLT_MIN;
+          // kernel
+          int pos;
+          for (i = kernel_dist_left; i <= kernel_dist_right; i++) {  // row
+            for (j = kernel_dist_left; j <= kernel_dist_right; j++) {  // col
+              float data;
+              if (row + i >= 0 && row + i < l.height && col + j >= 0 && col + j < l.width) {
+                data = in.data[l.width * row + col + i * l.width + j + ch * l.height * l.width];
+              } else {
+                data = 0;
+              }
+              if (data > max) {
+                max = data;
+                pos = l.width * row + col + i * l.width + j + ch * l.height * l.width;
+              }
+            }
+          }
+          dx.data[pos] += dy.data[r * dy.cols + index];
+          index++;
+        }
+      }
+    }
+  }
 
   return dx;
 }
