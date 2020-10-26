@@ -21,28 +21,27 @@ matrix forward_maxpool_layer(layer l, matrix in)
     matrix out = make_matrix(in.rows, outw*outh*l.channels);
 
     // TODO: 6.1 - iterate over the input and fill in the output with max values
-    int r, row, col, i, j, index;
+    int ch, r, row, col, i, j, index;
     for(r = 0; r < in.rows; r++) {
       index = 0;
       // process each image
-      for (row = 0; row < l.height; row += l.stride) {
-        for (col = 0; col < l.width; col += l.stride) {
-          float max = FLT_MIN;
-          // assert(max + 100 < 0);
-          // kernel
-          for (i = 0; i < l.size; i++) {
-            for (j = 0; j < l.size; j++) {
-              float data = in.data[l.width * row + col + i * l.width + j];
-              if (data > max) {
-                max = data;
+      for (ch = 0; ch < l.channels; ch++) {  
+	for (row = 0; row < l.height; row += l.stride) {
+          for (col = 0; col < l.width; col += l.stride) {
+            float max = FLT_MIN;
+            // kernel
+            for (i = 0; i < l.size; i++) {
+              for (j = 0; j < l.size; j++) {
+                float data = in.data[l.width * row + col + i * l.width + j + ch * l.height * l.width];
+                if (data > max) {
+                  max = data;
+                }
               }
             }
-          }
-          assert(max != 0);
-          out.data[r*out.cols + index] = max;
-          index++;
-          // out.data[i*out.cols + l.w * (row/l.stride) + (col/l.stride)] = max;
-        }
+            out.data[r*out.cols + index] = max;
+            index++;
+	  }
+	}
       }
     }
 
