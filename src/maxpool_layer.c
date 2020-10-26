@@ -21,33 +21,56 @@ matrix forward_maxpool_layer(layer l, matrix in)
     matrix out = make_matrix(in.rows, outw*outh*l.channels);
 
     // TODO: 6.1 - iterate over the input and fill in the output with max values
-    int i, j, ch, rows, c, r;
-    for(i = 0; i < in.rows; i++) {
-        image example = float_to_image(in.data + i*in.cols, l.width, l.height, l.channels);
-        image out_img = make_image(outw, outh, l.channels);
-
-        matrix x = im2col(example, l.size, l.stride);
-        //rows = x.rows / l.channels;
-        rows = l.size * l.size;
-        // Iterate through the columns
-        assert(l.channels == 3);
-        for (ch = 0; ch < l.channels; ch++) {
-            float max = FLT_MIN;
-            for (c = 0; c < x.cols; c++) {
-                // Iterate through the rows
-                for (r = ch * rows; r < rows * (ch + 1); r++) {
-                    float data = x.data[r * x.cols + c];
-                    if (data > max) {
-                        max = data;
-                    }
-                }
-                // set_pixel(out_img, c, r, ch, max);
-                // im.data[x + im.w*(y + im.h*c)];
-                // out.data[i*out.cols + c] = max;
-                // out.data[c + out.rows * (i * out.cols * ch)] = max;
-                out.data[(i * out.cols) + c + outw * (r + outh * l.channels)] = max;
+    int r, row, col, i, j, index;
+    for(r = 0; r < in.rows; r++) {
+      index = 0;
+      // process each image
+      for (row = 0; row < l.height; row += l.stride) {
+        for (col = 0; col < l.width; col += l.stride) {
+          float max = FLT_MIN;
+          // assert(max + 100 < 0);
+          // kernel
+          for (i = 0; i < l.size; i++) {
+            for (j = 0; j < l.size; j++) {
+              float data = in.data[l.width * row + col + i * l.width + j];
+              if (data > max) {
+                max = data;
+              }
             }
+          }
+          assert(max != 0);
+          out.data[r*out.cols + index] = max;
+          index++;
+          // out.data[i*out.cols + l.w * (row/l.stride) + (col/l.stride)] = max;
         }
+      }
+    }
+
+        // //image im = float_to_image(in.data + i*in.cols, l.width, l.height, l.channels);
+        // // image out_img = make_image(outw, outh, l.channels);
+        //
+        // //matrix x = im2col(im, l.size, l.stride);
+        // //rows = x.rows / l.channels;
+        // rows = l.size * l.size;
+        // // Iterate through the columns
+        // assert(l.channels == 3);
+        // for (ch = 0; ch < l.channels; ch++) {
+        //     float max = FLT_MIN;
+        //     for (c = 0; c < x.cols; c++) {
+        //         // Iterate through the rows
+        //         for (r = ch * rows; r < rows * (ch + 1); r++) {
+        //             float data = x.data[r * x.cols + c];
+        //             if (data > max) {
+        //                 max = data;
+        //             }
+        //         }
+        //         // set_pixel(out_img, c, r, ch, max);
+        //         // im.data[x + im.w*(y + im.h*c)];
+        //          out.data[i*out.cols + c] = max;
+        //         // out.data[c + out.rows * (i * out.cols * ch)] = max;
+        //         // out.data[(i * out.cols) + c + outw * (r + outh * l.channels)] = max;
+        //     }
+        // }
 
 
 
@@ -75,7 +98,7 @@ matrix forward_maxpool_layer(layer l, matrix in)
         // }
         // free_matrix(x);
         // free_matrix(wx);
-    }
+  //  }
 
     return out;
 }
@@ -123,4 +146,3 @@ layer make_maxpool_layer(int w, int h, int c, int size, int stride)
     l.update   = update_maxpool_layer;
     return l;
 }
-
