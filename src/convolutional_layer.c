@@ -66,8 +66,9 @@ matrix im2col(image im, int size, int stride)
 
   // get seperate channels
   for (int ch = 0; ch < im.c; ch++) {
-    for (j = 0; j < im.h; j += stride) {  // rows
-      for (i = 0; i < im.w; i += stride) {  // columns
+    for (i = 0; i < im.w; i += stride) {  // columns
+      for (j = 0; j < im.h; j += stride) {  // rows
+        int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
         // -1 to 1 --> -1, 0, 1
         for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // going top bottom - vertical
           for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // going left right - horizontal
@@ -76,7 +77,7 @@ matrix im2col(image im, int size, int stride)
             if (size % 2 != 0) {
               col_row_index += (size * size) / 2;
             }
-            int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
+            // int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
 
             if (i + k_col < 0 || i + k_col >= im.w || j + k_row < 0 || j + k_row >= im.h) {
               // out of bounds col-wise or row-wise
@@ -119,17 +120,17 @@ image col2im(int width, int height, int channels, matrix col, int size, int stri
 
   // get seperate channels
   for (int ch = 0; ch < im.c; ch++) {
-    for (j = 0; j < im.h; j += stride) {  // rows
-      for (i = 0; i < im.w; i += stride) {  // columns
+    for (i = 0; i < im.w; i += stride) {  // columns
+      for (j = 0; j < im.h; j += stride) {  // rows
+        int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
         // -1 to 1 --> -1, 0, 1
         for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // going top bottom - vertical
           for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // going left right - horizontal
             // get all the kernel values and put in output matrix
-            int col_row_index = (size * size) * ch + k_row * size + k_col; //+ (size * size) / 2;
+            int col_row_index = (size * size) * ch + k_row * size + k_col;
             if (size % 2 != 0) {
               col_row_index += (size * size) / 2;
             }
-            int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
             if (i + k_col >= 0 && i + k_col < im.w && j + k_row >= 0 && j + k_row < im.h) {
               float update = get_pixel(im, i + k_col, j + k_row, ch) + col.data[col_row_index * col.cols + col_col_index];
               set_pixel(im, i + k_col, j + k_row, ch, update);
