@@ -30,7 +30,7 @@ matrix forward_maxpool_layer(layer l, matrix in)
     kernel_dist_left = -l.size / 2;
     kernel_dist_right = l.size / 2;
   }
-  
+
 
   for(r = 0; r < in.rows; r++) {
     index = 0;
@@ -38,13 +38,13 @@ matrix forward_maxpool_layer(layer l, matrix in)
     for (ch = 0; ch < l.channels; ch++) {
       for (row = 0; row < l.height; row += l.stride) {
         for (col = 0; col < l.width; col += l.stride) {
-          float max = FLT_MIN;
+          float max = -100000000000; //FLT_MIN;
           // kernel
           for (i = kernel_dist_left; i <= kernel_dist_right; i++) {  // row
             for (j = kernel_dist_left; j <= kernel_dist_right; j++) {  // col
               float data;
               if (row + i >= 0 && row + i < l.height && col + j >= 0 && col + j < l.width) {
-                data = in.data[l.width * row + col + i * l.width + j + ch * l.height * l.width];
+                data = in.data[l.width * row + col + i * l.width + j + ch * l.height * l.width + r * in.cols];
               } else {
                 data = 0;
               }
@@ -85,7 +85,7 @@ matrix backward_maxpool_layer(layer l, matrix dy)
     kernel_dist_left = -l.size / 2;
     kernel_dist_right = l.size / 2;
   }
-  
+
 
   for(r = 0; r < in.rows; r++) {
     index = 0;
@@ -93,20 +93,20 @@ matrix backward_maxpool_layer(layer l, matrix dy)
     for (ch = 0; ch < l.channels; ch++) {
       for (row = 0; row < l.height; row += l.stride) {
         for (col = 0; col < l.width; col += l.stride) {
-          float max = FLT_MIN;
+          float max = -100000000000; //FLT_MIN;
           // kernel
           int pos;
           for (i = kernel_dist_left; i <= kernel_dist_right; i++) {  // row
             for (j = kernel_dist_left; j <= kernel_dist_right; j++) {  // col
               float data;
               if (row + i >= 0 && row + i < l.height && col + j >= 0 && col + j < l.width) {
-                data = in.data[l.width * row + col + i * l.width + j + ch * l.height * l.width];
+                data = in.data[l.width * row + col + i * l.width + j + ch * l.height * l.width + r * in.cols];
               } else {
                 data = 0;
               }
               if (data > max) {
                 max = data;
-                pos = l.width * row + col + i * l.width + j + ch * l.height * l.width;
+                pos = l.width * row + col + i * l.width + j + ch * l.height * l.width + r * in.cols;
               }
             }
           }
