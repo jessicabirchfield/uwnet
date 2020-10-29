@@ -38,7 +38,7 @@ matrix forward_maxpool_layer(layer l, matrix in)
     for (ch = 0; ch < l.channels; ch++) {
       for (row = 0; row < l.height; row += l.stride) {
         for (col = 0; col < l.width; col += l.stride) {
-          float max = -100000000000; //FLT_MIN;
+          float max = -100000000000.0; //FLT_MIN;
           // kernel
           for (i = kernel_dist_left; i <= kernel_dist_right; i++) {  // row
             for (j = kernel_dist_left; j <= kernel_dist_right; j++) {  // col
@@ -93,7 +93,7 @@ matrix backward_maxpool_layer(layer l, matrix dy)
     for (ch = 0; ch < l.channels; ch++) {
       for (row = 0; row < l.height; row += l.stride) {
         for (col = 0; col < l.width; col += l.stride) {
-          float max = -100000000000; //FLT_MIN;
+          float max = -100000000000.0; //FLT_MIN;
           // kernel
           int pos;
           for (i = kernel_dist_left; i <= kernel_dist_right; i++) {  // row
