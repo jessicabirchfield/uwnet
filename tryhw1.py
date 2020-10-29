@@ -1,12 +1,12 @@
 from uwnet import *
 
 def conv_net():
-        l = [   make_convolutional_layer(32, 32, 3, 4, 2, 1),
-                make_activation_layer(RELU),
-                make_maxpool_layer(32, 32, 4, 3, 2),
-                make_connected_layer(1024, 10),
-                make_activation_layer(SOFTMAX)]
-        return make_net(l)
+        # l = [   make_convolutional_layer(32, 32, 3, 4, 2, 1),
+        #         make_activation_layer(RELU),
+        #         make_maxpool_layer(32, 32, 4, 3, 2),
+        #         make_connected_layer(1024, 10),
+        #         make_activation_layer(SOFTMAX)]
+        # return make_net(l)
 
     l = [   make_convolutional_layer(32, 32, 3, 8, 3, 1),
             make_activation_layer(RELU),

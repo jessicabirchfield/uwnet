@@ -57,7 +57,6 @@ matrix im2col(image im, int size, int stride)
 
   // TODO: 5.1
   // Fill in the column matrix with patches from the image
-  // int kernel_dist = size / 2;  // distance from center of kernel
   int kernel_dist_left = -size / 2;
   int kernel_dist_right = size / 2;
   if (size % 2 == 0) {
@@ -70,19 +69,16 @@ matrix im2col(image im, int size, int stride)
       for (j = 0; j < im.h; j += stride) {  // rows
         int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
         // -1 to 1 --> -1, 0, 1
-        for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // going top bottom - vertical
-          for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // going left right - horizontal
+        for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // vertical
+          for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // horizontal
             // get all the kernel values and put in output matrix
-            int col_row_index = (size * size) * ch + k_row * size + k_col; //+ (size * size) / 2;
+            int col_row_index = (size * size) * ch + k_row * size + k_col;
             if (size % 2 != 0) {
               col_row_index += (size * size) / 2;
             }
-            // int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
 
             if (i + k_col < 0 || i + k_col >= im.w || j + k_row < 0 || j + k_row >= im.h) {
               // out of bounds col-wise or row-wise
-              // col_row_index = (k_row + kernel_dist) * size + (k_col + kernel_dist);
-              // This is correct?
               col.data[col_row_index * cols + col_col_index] = 0;
 
             } else {
@@ -124,8 +120,8 @@ image col2im(int width, int height, int channels, matrix col, int size, int stri
       for (j = 0; j < im.h; j += stride) {  // rows
         int col_col_index = (j / stride) * ((im.w - 1) / stride + 1) + (i / stride);
         // -1 to 1 --> -1, 0, 1
-        for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // going top bottom - vertical
-          for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // going left right - horizontal
+        for (int k_row = kernel_dist_left; k_row <= kernel_dist_right; k_row++) {  // vertical
+          for (int k_col = kernel_dist_left; k_col <= kernel_dist_right; k_col++) { // horizontal
             // get all the kernel values and put in output matrix
             int col_row_index = (size * size) * ch + k_row * size + k_col;
             if (size % 2 != 0) {
