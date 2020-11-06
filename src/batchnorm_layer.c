@@ -138,20 +138,20 @@ matrix delta_batch_norm(matrix d, matrix dm, matrix dv, matrix m, matrix v, matr
     float eps = 0.00001;
     int groups = m.cols;
     int n = x.cols / groups;
+    int elements = x.cols * x.rows / groups ;
+
     // TODO 7.5 - Calculate dL/dx
     assert(dx.rows == x.rows);
     assert(dx.cols == x.cols);
+    //assert(groups == 8);
     int i,j;
     for (i = 0; i < dx.rows; ++i) {
       for (j = 0; j < dx.cols; ++j) {
-        float dLdyterm = d.data[i*d.cols + j] / (sqrt(v.data[j/n] + eps));
-        float dLdvterm = dv.data[j/n] * (2 * (x.data[i*x.cols + j] - m.data[j/n]) / n);
-        float dLdmterm = dm.data[j/n] / n;
+        float dLdyterm = 1. * d.data[i*d.cols + j] / (sqrt(v.data[j/n] + eps));
+        float dLdvterm = 1. * dv.data[j/n] * (2 * (x.data[i*x.cols + j] - 1. * m.data[j/n]) / elements);
+        float dLdmterm = 1. * dm.data[j/n] / elements;
 
         dx.data[i*dx.cols + j] = dLdyterm + dLdvterm + dLdmterm;
-        // float term = (d.data[i*x.cols + j]) * (x.data[i*x.cols + j] - m.data[j/n]);
-        // term *= -0.5 * pow(v.data[j/n] + eps, -1.5);
-        // dv.data[j/n] += term;
       }
     }
     return dx;
